@@ -18,8 +18,11 @@ services:
       - "traefik.http.routers.fueljournal.tls.certresolver=myresolver"
       - "traefik.docker.network=traefik"
     volumes:
-      - ./fueljournal.db:/fueljournal.db
+      - shared_sqlite:/data
 
 networks:
   traefik:
     external: true
+
+volumes:
+  shared_sqlite:

@@ -1,0 +1,23 @@
+version: "3.8"
+
+services:
+  website-fueljournal:
+    container_name: website-fueljournal
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "82:80"
+    restart: always
+    networks:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.fueljournal.rule=Host(`fuel.homeserver-ericp.fr`)"
+      - "traefik.http.routers.fueljournal.entrypoints=websecure"
+      - "traefik.http.routers.fueljournal.tls=true"
+      - "traefik.http.services.fueljournal.loadbalancer.server.port=82"
+      - "traefik.http.routers.fueljournal.tls.certresolver=myresolver"
+      - "traefik.docker.network=traefik"
+    volumes:
+      - ./database.db:app/database.db

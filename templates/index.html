@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FuelJournal | Input</title>
+    <link rel="icon" type="image/png" href="/static/images/favicon.ico" />
+
+    <style>
+      @font-face {
+        font-family: "SevenSegment";
+        src: url("/static/fonts/segments.ttf") format("truetype");
+      }
+
+      body {
+        font-family: monospace;
+        background-image: url("/static/images/background.png");
+        background-size: cover;
+        display: flex;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+      }
+
+      @media (max-width: 1200px) {
+        body {
+          background-image: url("/static/images/background-mobile.png");
+        }
+
+        .container {
+          margin-top: 35%;
+        }
+      }
+
+      .container {
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        width: 280px;
+        text-align: center;
+      }
+
+      h1,
+      h2 {
+        font-size: 24px;
+        color: #ccc;
+      }
+
+      .inputs-container {
+        padding: 20px;
+        width: 75%;
+        margin: 0 auto;
+        border-radius: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border: 1px solid #ccc;
+      }
+
+      label {
+        display: block;
+        font-size: 16px;
+        margin: 10px 0 5px;
+        color: #fff;
+        width: 70px;
+        text-align: right;
+      }
+
+      .input-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        position: relative;
+      }
+
+      input[type="text"] {
+        max-width: 70px;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 19px;
+        font-family: "SevenSegment", sans-serif;
+      }
+
+      .badge {
+        color: #fff;
+        font-size: 18px;
+        margin-right: 30px;
+      }
+
+      input[type="submit"] {
+        width: 50%;
+        padding: 10px;
+        margin-top: 20px;
+        background-color: #ffffff;
+        color: #000000;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+
+      /** Pretty animation for the submit button */
+      input[type="submit"]:hover {
+        background-color: #000000;
+        color: #ffffff;
+        transition: background-color 0.3s, color 0.3s;
+      }
+
+      input[type="submit"]:active {
+        /** Put an animation on the button border when clicked */
+        animation: pulse 0.5s;
+
+        @keyframes pulse {
+          0% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.1);
+          }
+          100% {
+            transform: scale(1);
+          }
+        }
+      }
+
+      .banner {
+        padding: 15px;
+        margin: 10px;
+        border-radius: 5px;
+        color: #fff;
+        text-align: center;
+      }
+
+      .banner.success {
+        background-color: #4caf50;
+      }
+
+      .banner.error {
+        background-color: #f44336;
+      }
+    </style>
+    <script>
+      function maskInput(event) {
+        const input = event.target;
+        const value = input.value.replace(/[^0-9]/g, "");
+        const cursorPos = input.selectionStart;
+
+        if (value.length === 0) {
+          input.value = "_,___";
+          input.setSelectionRange(0, 0);
+          return;
+        }
+
+        const part1 = value.substr(0, 1);
+        const part2 = value.substr(1, 3);
+
+        input.value = `${part1},${part2}`.padEnd(5, "_");
+
+        if (event.inputType === "deleteContentBackward") {
+          if (cursorPos <= 1) {
+            input.value = `_,${part2}`.padEnd(5, "_");
+            input.setSelectionRange(0, 0);
+          } else if (cursorPos == 2) {
+            input.setSelectionRange(2, 2);
+          } else if (cursorPos == 3) {
+            input.setSelectionRange(3, 3);
+          } else {
+            input.setSelectionRange(4, 4);
+          }
+        } else {
+          if (cursorPos == 1) {
+            input.setSelectionRange(2, 2);
+          } else if (cursorPos == 2) {
+            input.setSelectionRange(2, 2);
+          } else if (cursorPos == 3) {
+            input.setSelectionRange(3, 3);
+          } else if (cursorPos == 5) {
+            input.setSelectionRange(5, 5);
+          } else {
+            input.setSelectionRange(4, 4);
+          }
+        }
+      }
+
+      function attachMasking() {
+        const inputs = document.querySelectorAll('input[type="text"]');
+        inputs.forEach((input) => {
+          input.placeholder = "_,___";
+          input.value = "_,___";
+          input.addEventListener("input", maskInput);
+          input.addEventListener("focus", (event) => {
+            if (event.target.value === "_,___") {
+              event.target.value = "";
+            }
+          });
+          input.addEventListener("blur", (event) => {
+            if (event.target.value === "") {
+              event.target.value = "_,___";
+            }
+          });
+        });
+      }
+
+      function validateForm(event) {
+        const inputs = document.querySelectorAll('input[type="text"]');
+        let valid = true;
+
+        inputs.forEach((input) => {
+          if (input.value.includes("_")) {
+            valid = false;
+            input.style.borderColor = "red"; // Optionally highlight invalid inputs
+          } else {
+            input.style.borderColor = "#ccc"; // Reset border color
+          }
+        });
+
+        if (!valid) {
+          alert(
+            "Veuillez remplir tous les champs correctement avant de soumettre."
+          );
+          event.preventDefault(); // Prevent form submission
+        }
+      }
+
+      window.onload = function () {
+        attachMasking();
+        document.querySelector("form").addEventListener("submit", validateForm);
+        const date = new Date().toLocaleDateString("fr-FR", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+
+        const formattedDate = date
+          .split(" ")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ");
+
+        document.getElementById("date").textContent = formattedDate;
+
+        const message = "{{ message }}";
+        if (message) {
+          const banner = document.getElementById("banner");
+          banner.textContent = message;
+          banner.style.display = "block";
+          if (message.includes("success")) {
+            banner.classList.add("success");
+          } else {
+            banner.classList.add("error");
+          }
+        }
+      };
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="title-container">
+        <h2 id="date"></h2>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=True) %} {% if
+      messages %} {% for category, message in messages %}
+      <div class="banner {{ category }}">{{ message }}</div>
+      {% endfor %} {% endif %} {% endwith %}
+
+      <!-- Display error message if any -->
+
+      {% if error %}
+      <p class="error"><strong>Error:</strong> {{ error }}</p>
+      {% endif %}
+
+      <form action="/" method="POST">
+        <div class="inputs-container">
+          <div class="input-wrapper">
+            <input type="text" id="sp95" name="sp95" />
+            <span class="badge">€</span>
+            <label for="sp95">SP95</label>
+          </div>
+
+          <div class="input-wrapper">
+            <input type="text" id="sp98" name="sp98" />
+            <span class="badge">€</span>
+            <label for="sp98">SP98</label>
+          </div>
+
+          <div class="input-wrapper">
+            <input type="text" id="dieselPremium" name="dieselPremium" />
+            <span class="badge">€</span>
+            <label for="dieselPremium">Diesel Premium</label>
+          </div>
+
+          <div class="input-wrapper">
+            <input type="text" id="diesel" name="diesel" />
+            <span class="badge">€</span>
+            <label for="diesel">Diesel</label>
+          </div>
+        </div>
+        <input type="submit" value="Submit" />
+      </form>
+    </div>
+  </body>
+</html>

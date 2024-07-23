@@ -1,10 +1,11 @@
 import sqlite3
 import os
+import time
 import datetime
 from flask import Flask, request, render_template, flash, g
 
 app = Flask(__name__)
-app.secret_key = 'supersecretkey'  # Required for flash messages
+app.secret_key = 'supersecretkey'
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATABASE = os.path.join(BASE_DIR, 'database.db')
@@ -12,7 +13,7 @@ DATABASE = os.path.join(BASE_DIR, 'database.db')
 def get_db():
     if 'db' not in g:
         g.db = sqlite3.connect(DATABASE)
-        g.db.row_factory = sqlite3.Row  # Optional: to access columns by name
+        g.db.row_factory = sqlite3.Row
     return g.db
 
 def close_db(e=None):
@@ -39,13 +40,23 @@ CREATE TABLE IF NOT EXISTS FuelPrices(
 '''
 
 def create_table():
-    with app.app_context():  # Ensures the code runs in an application context
+    with app.app_context(): 
         db = get_db()
         db.execute(req_table)
         db.commit()
         print("Opened database successfully")
         cursor = db.execute('SELECT COUNT(*) FROM FuelPrices')
         print("Amount of rows in the table: ", cursor.fetchone()[0])
+        
+        time.sleep(1)
+        
+        # Add 1.50 entries for testing
+        try:
+            insert_entry(get_date(2024, 7, 20, 5, 0, 0), 1.50, 1.50, 1.50, 1.50)
+            insert_entry(get_date(2024, 7, 21, 5, 0, 0), 1.50, 1.50, 1.50, 1.50)
+            insert_entry(get_date(2024, 7, 22, 5, 0, 0), 1.50, 1.50, 1.50, 1.50)
+        except sqlite3.IntegrityError:
+            pass
 
 def has_entry(date):
     db = get_db()
@@ -59,9 +70,15 @@ def insert_entry(date, sp95, sp98, dieselPremium, diesel):
     db.commit()
     print("Record created successfully")
 
+"""
+Returns date as : 2023-11-02T00:00:00Z
+"""
 def get_today_date():
-    today = datetime.date.today()
-    return today.strftime("%Y-%m-%d")
+    return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+def get_date(year, month, day, hour, minute, second):
+    return datetime.datetime(year, month, day, hour, minute, second).strftime("%Y-%m-%d %H:%M:%S")
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -97,6 +114,6 @@ def index():
     return render_template('index.html')
 
 if __name__ == '__main__':
-    with app.app_context():  # Ensure the context is active for initial setup
+    with app.app_context():
         create_table()
     app.run(host='0.0.0.0', port=80, debug=True)

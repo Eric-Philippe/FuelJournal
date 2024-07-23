@@ -1,11 +1,13 @@
 import sqlite3
+import os
 import datetime
 from flask import Flask, request, render_template, flash, g
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'  # Required for flash messages
 
-DATABASE = 'database.db'
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATABASE = os.path.join(BASE_DIR, 'database.db')
 
 def get_db():
     if 'db' not in g:

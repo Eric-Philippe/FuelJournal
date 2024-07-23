@@ -8,7 +8,7 @@ app = Flask(__name__)
 app.secret_key = 'supersecretkey'
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATABASE = os.path.join(BASE_DIR, 'database.db')
+DATABASE = os.path.join(BASE_DIR, 'fueljournal.db')
 
 def get_db():
     if 'db' not in g:

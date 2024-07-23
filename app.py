@@ -52,9 +52,10 @@ def create_table():
         
         # Add 1.50 entries for testing
         try:
-            insert_entry(get_date(2024, 7, 20, 5, 0, 0), 1.50, 1.50, 1.50, 1.50)
-            insert_entry(get_date(2024, 7, 21, 5, 0, 0), 1.50, 1.50, 1.50, 1.50)
-            insert_entry(get_date(2024, 7, 22, 5, 0, 0), 1.50, 1.50, 1.50, 1.50)
+            insert_entry(get_date(2024, 7, 20), 1.10, 1.10, 1.10, 1.10)
+            insert_entry(get_date(2024, 7, 21), 1.20, 1.20, 1.20, 1.20)
+            insert_entry(get_date(2024, 7, 22), 1.30, 1.30, 1.30, 1.30)
+            insert_entry(get_date(2024, 7, 23), 1.40, 1.40, 1.40, 1.40)
         except sqlite3.IntegrityError:
             pass
 
@@ -71,13 +72,13 @@ def insert_entry(date, sp95, sp98, dieselPremium, diesel):
     print("Record created successfully")
 
 """
-Returns date as : 2023-11-02T00:00:00Z
+Returns date as : 2023-11-02
 """
 def get_today_date():
-    return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return datetime.datetime.now().strftime("%Y-%m-%d")
 
-def get_date(year, month, day, hour, minute, second):
-    return datetime.datetime(year, month, day, hour, minute, second).strftime("%Y-%m-%d %H:%M:%S")
+def get_date(year, month, day):
+    return datetime.datetime(year, month, day).strftime("%Y-%m-%d")
 
 
 @app.route('/', methods=['GET', 'POST'])

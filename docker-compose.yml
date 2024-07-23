@@ -26,3 +26,4 @@ networks:
 
 volumes:
   shared_sqlite:
+    external: true

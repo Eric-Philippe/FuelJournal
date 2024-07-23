@@ -99,4 +99,4 @@ def index():
 if __name__ == '__main__':
     with app.app_context():  # Ensure the context is active for initial setup
         create_table()
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    app.run(host='0.0.0.0', port=80, debug=True)

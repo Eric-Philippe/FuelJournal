@@ -14,7 +14,7 @@ services:
       - "traefik.http.routers.fueljournal.rule=Host(`fuel.homeserver-ericp.fr`)"
       - "traefik.http.routers.fueljournal.entrypoints=websecure"
       - "traefik.http.routers.fueljournal.tls=true"
-      - "traefik.http.services.fueljournal.loadbalancer.server.port=5001"
+      - "traefik.http.services.fueljournal.loadbalancer.server.port=80"
       - "traefik.http.routers.fueljournal.tls.certresolver=myresolver"
       - "traefik.docker.network=traefik"
     volumes:

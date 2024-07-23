@@ -18,7 +18,7 @@ services:
       - "traefik.http.routers.fueljournal.tls.certresolver=myresolver"
       - "traefik.docker.network=traefik"
     volumes:
-      - ./database.db:/app/database.db
+      - ./fueljournal.db:/fueljournal.db
 
 networks:
   traefik:

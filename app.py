@@ -12,7 +12,6 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'
 
-
 # InfluxDB setup
 INFLUXDB_URL = os.getenv("INFLUXDB_URL", "http://influxdb:8086")
 INFLUXDB_TOKEN = os.getenv("INFLUXDB_TOKEN")
@@ -26,21 +25,21 @@ query_api = influx_client.query_api()
 
 def push_to_influxdb(date, sp95, sp98, dieselPremium, diesel):
     point = influxdb_client.Point("fuel_prices") \
-        .tag("date", date) \
         .field("sp95", sp95) \
         .field("sp98", sp98) \
         .field("dieselPremium", dieselPremium) \
-        .field("diesel", diesel)
+        .field("diesel", diesel) \
+        .time(date)
     write_api.write(bucket=INFLUXDB_BUCKET, record=point)
     print("Data pushed to InfluxDB")
-
-def check_entry_exists(date):
-    query = f'''
-    from(bucket: "{INFLUXDB_BUCKET}")
-      |> range(start: {date}T00:00:00Z, stop: {date}T23:59:59Z)
-      |> filter(fn: (r) => r["_measurement"] == "fuel_prices")
-      |> limit(n: 1)
-    '''
+    
+"""
+from(bucket: "{INFLUXDB_BUCKET}")
+      |> range(start: 2021-05-22T23:30:00Z, stop: 2021-05-23T00:00:00Z)
+      |> filter(fn: (r) => r._measurement == "fuel_prices")
+"""
+def check_entry_exists():
+    query = f'from(bucket: "{INFLUXDB_BUCKET}") |> range(start: -1d) |> filter(fn: (r) => r._measurement == "fuel_prices")'
     result = query_api.query(query)
     return len(result) > 0
 
@@ -48,7 +47,7 @@ def check_entry_exists(date):
 def index():
     if request.method == 'POST': 
         date = get_today_date()
-        if check_entry_exists(date):
+        if check_entry_exists():
             flash("An entry for today's date already exists.", 'error')
             return render_template('index.html')
         
@@ -78,8 +77,14 @@ def index():
     
     return render_template('index.html')
 
+"""
+1996-02-25T21:20:00.001001231Z
+The hour will always be 5am
+"""
 def get_today_date():
-    return datetime.datetime.now().strftime("%Y-%m-%d")
+    today = datetime.datetime.now()
+    date = today.strftime("%Y-%m-%d")
+    return f"{date}T05:00:000000000Z"
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80, debug=True)

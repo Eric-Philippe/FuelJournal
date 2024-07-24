@@ -3,6 +3,7 @@ import datetime
 from flask import Flask, request, render_template, flash, g
 import influxdb_client
 from influxdb_client.client.write_api import SYNCHRONOUS
+from influxdb_client.client.query_api import QueryApi
 # Load .env file
 from dotenv import load_dotenv
 
@@ -21,6 +22,7 @@ INFLUXDB_BUCKET = os.getenv("INFLUXDB_BUCKET")
 # Initialize InfluxDB client
 influx_client = influxdb_client.InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
 write_api = influx_client.write_api(write_options=SYNCHRONOUS)
+query_api = influx_client.query_api()
 
 def push_to_influxdb(date, sp95, sp98, dieselPremium, diesel):
     point = influxdb_client.Point("fuel_prices") \
@@ -32,10 +34,24 @@ def push_to_influxdb(date, sp95, sp98, dieselPremium, diesel):
     write_api.write(bucket=INFLUXDB_BUCKET, record=point)
     print("Data pushed to InfluxDB")
 
+def check_entry_exists(date):
+    query = f'''
+    from(bucket: "{INFLUXDB_BUCKET}")
+      |> range(start: {date}T00:00:00Z, stop: {date}T23:59:59Z)
+      |> filter(fn: (r) => r["_measurement"] == "fuel_prices")
+      |> limit(n: 1)
+    '''
+    result = query_api.query(query)
+    return len(result) > 0
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST': 
         date = get_today_date()
+        if check_entry_exists(date):
+            flash("An entry for today's date already exists.", 'error')
+            return render_template('index.html')
+        
         sp95 = request.form['sp95']
         sp98 = request.form['sp98']
         dieselPremium = request.form['dieselPremium']
